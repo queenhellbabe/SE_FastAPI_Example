@@ -9,5 +9,9 @@ def get_classifier():
 
 
 def analyze_text(text: str):
+    normalized_text = text.strip()
+    if not normalized_text:
+        raise ValueError("Text for analysis must not be empty.")
+
     classifier = get_classifier()
-    return classifier(text)
+    return classifier(normalized_text)
