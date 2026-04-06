@@ -1,7 +1,16 @@
+import logging
+import os
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, field_validator
 
 from services import analyze_text
+
+logging.basicConfig(
+    level=os.getenv("LOG_LEVEL", "INFO").upper(),
+    format="%(asctime)s %(name)s %(levelname)s %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 
 class Item(BaseModel):
@@ -49,9 +58,14 @@ def healthcheck() -> HealthResponse:
 
 @app.post("/predict/", response_model=PredictionResponse)
 def predict(item: Item) -> PredictionResponse:
+    logger.info("Received predict request, text length: %d", len(item.text))
     try:
-        return {"result": analyze_text(item.text)}
+        result = analyze_text(item.text)
+        logger.info("Prediction successful: %s", result)
+        return {"result": result}
     except ValueError as e:
+        logger.warning("Validation error: %s", e)
         raise HTTPException(status_code=400, detail=str(e))
     except Exception:
+        logger.exception("Unexpected error during prediction")
         raise HTTPException(status_code=500, detail="Internal server error")
