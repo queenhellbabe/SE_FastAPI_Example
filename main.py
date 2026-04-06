@@ -1,11 +1,18 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, field_validator
 
 from services import analyze_text
 
 
 class Item(BaseModel):
     text: str
+
+    @field_validator("text")
+    @classmethod
+    def text_must_not_be_blank(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("text must not be blank or whitespace only")
+        return v
 
 
 class HealthResponse(BaseModel):
@@ -39,4 +46,7 @@ def healthcheck() -> HealthResponse:
 
 @app.post("/predict/", response_model=PredictionResponse)
 def predict(item: Item) -> PredictionResponse:
-    return {"result": analyze_text(item.text)}
+    try:
+        return {"result": analyze_text(item.text)}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
