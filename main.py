@@ -10,9 +10,12 @@ class Item(BaseModel):
     @field_validator("text")
     @classmethod
     def text_must_not_be_blank(cls, v: str) -> str:
-        if not v.strip():
+        stripped = v.strip()
+        if not stripped:
             raise ValueError("text must not be blank or whitespace only")
-        return v
+        if len(stripped) > 512:
+            raise ValueError("text must not exceed 512 characters")
+        return stripped
 
 
 class HealthResponse(BaseModel):
@@ -50,3 +53,5 @@ def predict(item: Item) -> PredictionResponse:
         return {"result": analyze_text(item.text)}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=500, detail="Internal server error")
