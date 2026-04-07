@@ -3,6 +3,7 @@ import streamlit as st
 from services import analyze_text
 
 MAX_HISTORY = 10
+LABEL_COLORS = {"POSITIVE": "green", "NEGATIVE": "red"}
 
 st.set_page_config(page_title="Sentiment Analysis", page_icon=":speech_balloon:")
 
@@ -21,7 +22,7 @@ if st.button("Analyze"):
             label = result[0]["label"]
             score = result[0]["score"]
 
-            color = "green" if label == "POSITIVE" else "red"
+            color = LABEL_COLORS.get(label, "gray")
             st.markdown(
                 f"**Result:** :{color}[{label}] — confidence: {score:.1%}"
             )
@@ -44,7 +45,7 @@ if st.session_state.history:
         st.rerun()
 
     for entry in st.session_state.history:
-        color = "green" if entry["label"] == "POSITIVE" else "red"
+        color = LABEL_COLORS.get(entry["label"], "gray")
         st.markdown(
             f"- :{color}[{entry['label']}] {entry['score']:.1%} — *{entry['text'][:80]}*"
         )
