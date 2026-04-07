@@ -1,15 +1,12 @@
 import logging
-import os
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, field_validator
 
+from logging_config import configure_logging
 from services import analyze_text
 
-logging.basicConfig(
-    level=os.getenv("LOG_LEVEL", "INFO").upper(),
-    format="%(asctime)s %(name)s %(levelname)s %(message)s",
-)
+configure_logging()
 logger = logging.getLogger(__name__)
 
 
@@ -61,7 +58,7 @@ def predict(item: Item) -> PredictionResponse:
     logger.info("Received predict request, text length: %d", len(item.text))
     try:
         result = analyze_text(item.text)
-        logger.info("Prediction successful: %s", result)
+        logger.info("Prediction successful: label=%s score=%.4f", result[0]["label"], result[0]["score"])
         return {"result": result}
     except ValueError as e:
         logger.warning("Validation error: %s", e)

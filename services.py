@@ -18,5 +18,5 @@ def analyze_text(text: str):
     start = time.perf_counter()
     result = classifier(text.strip())
     elapsed = time.perf_counter() - start
-    logger.debug("Inference completed in %.3fs", elapsed)
+    logger.info("Inference completed in %.3fs", elapsed)
     return result
